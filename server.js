@@ -16,9 +16,6 @@ import chatRoutes from './routes/chatRoutes.js';
 // Load environment variables
 dotenv.config();
 
-// Connect to database
-connectDB();
-
 // Initialize Express app
 const app = express();
 
@@ -82,8 +79,23 @@ app.use((req, res) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🌐 API URL: http://localhost:${PORT}`);
-});
+// Initialize server after database connection
+const startServer = async () => {
+  try {
+    // Connect to database
+    await connectDB();
+    
+    // Start listening
+    app.listen(PORT, () => {
+      console.log(`🚀 Server is running on port ${PORT}`);
+      console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🌐 API URL: http://localhost:${PORT}`);
+      console.log(`\n💡 To seed initial data, run: npm run seed`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();

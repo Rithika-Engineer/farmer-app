@@ -11,14 +11,20 @@ dotenv.config();
 
 const seedData = async () => {
   try {
+    console.log('🔄 Connecting to database...');
     await connectDB();
+    
+    // Wait a bit to ensure connection is fully established
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Clear existing data (optional - comment out if you want to keep existing data)
-    // await Crop.deleteMany({});
-    // await Scheme.deleteMany({});
-    // await MarketPrice.deleteMany({});
-    // await Job.deleteMany({});
-    // await Video.deleteMany({});
+    console.log('🗑️  Clearing existing data...');
+    // Clear existing data before seeding
+    await Crop.deleteMany({});
+    await Scheme.deleteMany({});
+    await MarketPrice.deleteMany({});
+    await Job.deleteMany({});
+    await Video.deleteMany({});
+    console.log('✅ Existing data cleared');
 
     // Seed Crops
     const crops = [
@@ -322,25 +328,44 @@ const seedData = async () => {
     ];
 
     // Insert data
+    console.log('📦 Seeding crops...');
     await Crop.insertMany(crops);
-    console.log('✅ Crops seeded');
+    console.log(`✅ ${crops.length} crops seeded`);
 
+    console.log('📦 Seeding schemes...');
     await Scheme.insertMany(schemes);
-    console.log('✅ Schemes seeded');
+    console.log(`✅ ${schemes.length} schemes seeded`);
 
+    console.log('📦 Seeding market prices...');
     await MarketPrice.insertMany(marketPrices);
-    console.log('✅ Market prices seeded');
+    console.log(`✅ ${marketPrices.length} market prices seeded`);
 
+    console.log('📦 Seeding jobs...');
     await Job.insertMany(jobs);
-    console.log('✅ Jobs seeded');
+    console.log(`✅ ${jobs.length} jobs seeded`);
 
+    console.log('📦 Seeding videos...');
     await Video.insertMany(videos);
-    console.log('✅ Videos seeded');
+    console.log(`✅ ${videos.length} videos seeded`);
 
     console.log('🎉 All data seeded successfully!');
+    console.log(`📊 Summary:`);
+    console.log(`   - Crops: ${crops.length}`);
+    console.log(`   - Schemes: ${schemes.length}`);
+    console.log(`   - Market Prices: ${marketPrices.length}`);
+    console.log(`   - Jobs: ${jobs.length}`);
+    console.log(`   - Videos: ${videos.length}`);
+    
+    await mongoose.connection.close();
+    console.log('🔌 Database connection closed');
     process.exit(0);
   } catch (error) {
     console.error('❌ Error seeding data:', error);
+    if (error.code === 11000) {
+      console.error('⚠️  Duplicate key error - some data may already exist');
+    }
+    console.error('Stack trace:', error.stack);
+    await mongoose.connection.close();
     process.exit(1);
   }
 };
